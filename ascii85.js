@@ -71,7 +71,7 @@ String.prototype.fromAscii85 = function() {
 	}
 
 	var str = this;
-	str = str.replace(/ /g,'');
+	str = str.replace(/\s/g,'');
 	if (/^<~/.test(str)) str = str.replace(/^<~/,'');
 	if (/~>$/.test(str)) str = str.replace(/~>$/,'');
 	var match = '';
