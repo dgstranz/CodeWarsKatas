@@ -11,15 +11,12 @@ String.prototype.toAscii85 = function() {
 
 	function numToAscii85(num) {
 		var res = '';
-		if (num > 0) {
-			while (num > 0) {
-				chr = String.fromCharCode((num % 85) + 33);
-				res = chr + res;
-				num = Math.floor(num/85);
-			}
-		} else {
-			res = 'z'; // 'z' is shorthand for '!!!!!' in Ascii85
+		while (num > 0) {
+			chr = String.fromCharCode((num % 85) + 33);
+			res = chr + res;
+			num = Math.floor(num/85);
 		}
+		while (res.length < 5) res = '!' + res;
 		return res;
 	}
 
@@ -28,7 +25,7 @@ String.prototype.toAscii85 = function() {
 	var extlen = 4 * Math.ceil(len/4); // "Extended" length. It's a multiple of 4 equal to or greater than len
 	var pos = 0; // The position of the string we're at
 	var num = 0; // The result of converting a substring into a number
-	var res = '<~';
+	var res = '';
 	while (len - pos >= 4) { // While there are at least four characters remaining...
 		substr = str.substring(pos,pos+4);
 		num = strToNum(substr);
@@ -41,7 +38,13 @@ String.prototype.toAscii85 = function() {
 		num = strToNum(substr); //...convert...
 		res += numToAscii85(num).substring(0, 5 + len - extlen); //...and remove the same amount of characters
 	};
-	res += '~>';
+
+	var match = '';
+	while ((match = /!!!!!/g.exec(res)) != null && match.index % 5 == 0) {
+		res = res.replace(/!!!!!/, 'z');
+	}
+
+	res = '<~' + res + '~>';
 	return res;
 }
 
@@ -58,15 +61,12 @@ String.prototype.fromAscii85 = function() {
 
 	function numToAscii(num) {
 		var res = '';
-		if (num > 0) {
-			while (num > 0) {
-				chr = String.fromCharCode(num % 256);
-				res = chr + res;
-				num = Math.floor(num/256);
-			}
-		} else {
-			res = '\0\0\0\0';
+		while (num > 0) {
+			chr = String.fromCharCode(num % 256);
+			res = chr + res;
+			num = Math.floor(num/256);
 		}
+		while (res.length < 4) res = '\0' + res;
 		return res;
 	}
 
@@ -77,7 +77,6 @@ String.prototype.fromAscii85 = function() {
 	var match = '';
 	while ((match = /z/g.exec(str)) != null && match.index % 5 == 0) {
 		str = str.replace(/z/, '!!!!!');
-		console.log(str);
 	}
 
 	var len = str.length;
@@ -88,7 +87,6 @@ String.prototype.fromAscii85 = function() {
 	while (len - pos >= 5) {
 		substr = str.substring(pos,pos+5);
 		num = strToNum(substr);
-		console.log(substr + ' : ' + num + ' : ' + numToAscii(num) + ' : ' + pos);
 		res += numToAscii(num);
 		pos += 5;
 	}
@@ -96,7 +94,6 @@ String.prototype.fromAscii85 = function() {
 		substr = str.substring(pos,len) + 'uuuu';
 		substr = substr.substring(0,5);
 		num = strToNum(substr);
-		console.log(substr + ' : ' + num + ' : ' + numToAscii(num) + ' : ' + pos);
 		res += numToAscii(num).substring(0, 4 + len - extlen);
 	};
 	return res;
